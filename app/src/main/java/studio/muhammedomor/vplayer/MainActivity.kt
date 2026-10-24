@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private var allMedia = listOf<MediaItem>()
     private var mode = "All"
     private var query = ""
+    private var selectedFolder: String? = null
     private val prefs by lazy { getSharedPreferences("vplayer", MODE_PRIVATE) }
 
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { refreshLibrary() }
@@ -62,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         search = EditText(this).apply { hint = "Search videos and music"; setSingleLine(true); textSize = 15f; setPadding(dp(14), 0, dp(14), 0); backgroundTintList = android.content.res.ColorStateList.valueOf(0xFFFF4B1B.toInt()); setTextColor(0xFF202124.toInt()) }
         root.addView(search, LinearLayout.LayoutParams(-1, dp(48)))
         val tabs = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER; setPadding(0, dp(10), 0, dp(12)) }
-        listOf("All", "Playlists", "Folders", "Shorts").forEach { label -> tabs.addView(button(label) { mode = label; title.text = if(label == "All") "Videos" else label; render() }, LinearLayout.LayoutParams(0, dp(44), 1f).apply { setMargins(dp(3),0,dp(3),0) }) }
+        listOf("All", "Playlists", "Folders", "Shorts").forEach { label -> tabs.addView(button(label) { mode = label; selectedFolder = null; title.text = if(label == "All") "Videos" else label; render() }, LinearLayout.LayoutParams(0, dp(44), 1f).apply { setMargins(dp(3),0,dp(3),0) }) }
         root.addView(tabs)
         val titleRow = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         title = TextView(this).apply { text = "Videos"; textSize = 25f; typeface = android.graphics.Typeface.DEFAULT_BOLD; setTextColor(0xFF202124.toInt()) }
@@ -74,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         root.addView(count)
         list = RecyclerView(this).apply { layoutManager = LinearLayoutManager(this@MainActivity); overScrollMode = View.OVER_SCROLL_NEVER }
         root.addView(list, LinearLayout.LayoutParams(-1, 0, 1f))
-        empty = TextView(this).apply { text = "No media found\\nAllow media access or add files to your phone."; textSize = 17f; gravity = Gravity.CENTER; setTextColor(0xFF85878C.toInt()); visibility = View.GONE }
+        empty = TextView(this).apply { text = "No media found\nAllow media access or add files to your phone."; textSize = 17f; gravity = Gravity.CENTER; setTextColor(0xFF85878C.toInt()); visibility = View.GONE }
         root.addView(empty, LinearLayout.LayoutParams(-1, 0, 1f))
         val bottom = LinearLayout(this).apply { gravity = Gravity.CENTER; orientation = LinearLayout.HORIZONTAL }
         listOf("Videos", "Music", "▶", "Downloads", "More").forEach { label -> bottom.addView(button(label) {
@@ -88,13 +89,35 @@ class MainActivity : AppCompatActivity() {
         }, LinearLayout.LayoutParams(0, dp(52), 1f)) }
         root.addView(bottom)
         setContentView(root)
-        adapter = MediaAdapter { item -> openPlayer(allMedia.indexOfFirst { it.uri == item.uri }) }
+        adapter = MediaAdapter { item ->
+            if (mode == "Folders" && selectedFolder == null) {
+                selectedFolder = item.name
+                query = ""
+                search.setText("")
+                title.text = item.name
+                render()
+            } else {
+                val originalIndex = allMedia.indexOfFirst { it.uri == item.uri }
+                openPlayer(originalIndex)
+            }
+        }
         list.adapter = adapter
         search.addTextChangedListener(object: TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { query = s?.toString().orEmpty(); render() }
             override fun afterTextChanged(s: Editable?) {}
         })
+    }
+
+    @Deprecated("Deprecated in Android API")
+    override fun onBackPressed() {
+        if (mode == "Folders" && selectedFolder != null) {
+            selectedFolder = null
+            title.text = "Folders"
+            render()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     private fun requestMediaAccess() {
@@ -118,7 +141,15 @@ class MainActivity : AppCompatActivity() {
         var shown = when(mode) {
             "Music" -> allMedia.filter { it.isAudio }
             "Shorts" -> allMedia.filter { !it.isAudio && it.durationMs in 1..90_000 }
-            "Folders" -> allMedia.filter { !it.isAudio }.groupBy { it.folder }.values.mapNotNull { it.firstOrNull() }
+            "Folders" -> {
+                val videos = allMedia.filter { !it.isAudio }
+                if (selectedFolder == null) {
+                    val folders = videos.groupBy { it.folder }.toSortedMap()
+                    val folderRows = folders.mapNotNull { (folder, media) -> media.firstOrNull()?.copy(name = folder) }
+                    // Folder rows are opened by their folder name; media is filtered after selection.
+                    folderRows
+                } else videos.filter { it.folder == selectedFolder }
+            }
             "Playlists" -> allMedia.filter { prefs.getStringSet("favorites", emptySet()).orEmpty().contains(it.uri.toString()) }
             else -> allMedia.filter { !it.isAudio }
         }

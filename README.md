@@ -1,33 +1,40 @@
-# V Player Android
+# V Player — Android project
 
-Native Android video/audio player project using **Kotlin + AndroidX Media3 (ExoPlayer)**. The library interface is native Android; JavaScript is not required for the playback engine. This architecture is more suitable for device media access and reliable playback than wrapping a web page.
+Package: `studio.muhammedomor.vplayer`
 
-## Included
-- GitHub Actions workflow builds a debug APK on push or manual workflow dispatch
-- MediaStore library scan for device video/audio, with media permission requests
-- Optional Android 11+ All files access settings prompt
-- Media list, search, music filter, Shorts filter, folder grouping starter, favorites placeholder, history list
-- Media3 playback controls, seek ±10 seconds, speed choices (0.5×–2×), next video and portrait/landscape toggle
-- Remembers playback position per media URI and resumes on next open
-- About dialog with Muhammed Omor and the supplied Hikmah and GitHub URLs
+## Build
 
-## Build APK using GitHub Actions
-1. Create/open `https://github.com/muhammedomor-studio/V-Player`.
-2. Upload the contents of this folder to the repository root (so `settings.gradle.kts` is at root).
-3. Commit and push to `main` or `master`, or go to **Actions → Build V Player APK → Run workflow**.
-4. Open the successful workflow run, find **Artifacts**, and download `V-Player-debug-apk`. Extract it to get `app-debug.apk`.
+The project uses JDK 17, Gradle 8.9, Android Gradle Plugin 8.7.3, Kotlin 2.0.21 and AndroidX Media3 1.5.1.
 
-## Local build
-Requires JDK 17 and Gradle 8.9. Run `gradle assembleDebug`.
+```bash
+gradle --no-daemon assembleDebug
+gradle --no-daemon assembleRelease bundleRelease
+```
 
-## Permissions and Android policy
-The app requests media permissions and offers the system's special All files access setting on Android 11+. That special permission is sensitive and Google Play restricts its use; request it only if the app's core functionality genuinely needs broad file management. Android can still restrict what a given API/permission exposes. The system document picker is offered for selecting a folder, but this starter does not yet recursively enumerate every document-tree provider.
+GitHub Actions builds a debug APK, release APK and Android App Bundle (AAB). The release build is **not signed for Play upload** unless you configure signing credentials in GitHub Actions and add a release signing configuration. Never commit a keystore or passwords.
 
-## UI improvements in this revision
-- App launcher icon uses the supplied V Player play-logo image; a scalable Android vector logo is also included
-- More menu now includes direct Developer profile and GitHub repository links
-- Video list separates audio from video, and Android 10+ video thumbnails are loaded asynchronously where available
-- Updated premium neutral palette with orange accent and improved playback control contrast
+## Implemented in this revision
 
-## Important status
-This is a substantial starter implementation, not yet verified by a real Android build or device test in this environment. Please run the GitHub Actions workflow and inspect build logs before treating it as release-ready. More advanced features such as background playback/media notification, subtitle file picker, gesture brightness/volume, audio track selection UI, thumbnails, persistent Room database, casting, and MP3 transcoding are not included yet.
+- Media3 ExoPlayer playback with Media3 HLS, DASH and RTSP modules included.
+- Existing MediaStore library and playback-position/history persistence.
+- Playback speed selector from 0.25× to 4×.
+- Horizontal swipe seeking and vertical left/right brightness/volume gestures.
+- Audio-track selection where the stream exposes selectable tracks.
+- External subtitle picker for common text subtitle formats supported by Media3.
+- Fit/crop/stretch display modes.
+- Picture-in-picture entry and multitasking manifest configuration.
+- Modern media permissions, internet permission, release R8/minification rules and CI build of APK/AAB.
+
+## Important platform and format limits
+
+This repository is an Android player foundation, not a certification that all 40 requested commercial features are complete. Playback depends on Android's available decoders and the actual media codec/container. Media3 does not automatically guarantee AVI/FLV/ASS/SSA, 8K/120 fps, HDR10 or Dolby Vision on every device; Dolby Vision/HDR output is device, display, stream and decoder dependent. Software decoding for arbitrary codecs is not bundled. RTMP is not provided by the included Media3 modules. Network URLs, background audio service, persistent Room schema, sleep timer, AB repeat, screenshot/gallery capture, private vault, SMB/FTP/WebDAV, casting/DLNA, EQ/bass/virtualizer, online subtitle provider, analytics/crash reporting, ads, billing and full localization still require separately designed and tested modules and service credentials.
+
+The manifest intentionally does not request `MANAGE_EXTERNAL_STORAGE`: broad file access is highly restricted by Google Play policy. Use the system Photo Picker/Storage Access Framework or MediaStore access for user-selected media.
+
+## Before Play Store release
+
+1. Add and test the remaining features listed above on a representative device matrix.
+2. Configure a private release keystore using GitHub Actions secrets and verify signing.
+3. Add privacy policy, data safety disclosures, content rating and store listing.
+4. Test Android 8–16 behavior, media permissions, PiP, audio focus, Bluetooth routing, subtitles and malformed media files.
+5. Run `gradle lintRelease test` and physical-device regression tests. CI compilation alone does not prove runtime correctness.

@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
         header.addView(button("◷") { showHistory() })
         header.addView(button("⌕") { search.requestFocus() })
         root.addView(header)
-        search = EditText(this).apply { hint = "Search videos and music"; singleLine = true; textSize = 15f; setPadding(dp(12), 0, dp(12), 0) }
+        search = EditText(this).apply { hint = "Search videos and music"; setSingleLine(true); textSize = 15f; setPadding(dp(12), 0, dp(12), 0) }
         root.addView(search, LinearLayout.LayoutParams(-1, dp(48)))
         val tabs = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER; setPadding(0, dp(10), 0, dp(12)) }
         listOf("All", "Playlists", "Folders", "Shorts").forEach { label -> tabs.addView(button(label) { mode = label; title.text = if(label == "All") "Videos" else label; render() }, LinearLayout.LayoutParams(0, dp(44), 1f).apply { setMargins(dp(3),0,dp(3),0) }) }

@@ -1,39 +1,54 @@
-name: V Player Android CI
+name: Build VPlayer APK
+
 on:
   push:
-    branches: [main, master]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [main, master]
+    branches: [ "main", "master" ]
   workflow_dispatch:
+
 permissions:
   contents: read
+  actions: read
+
 jobs:
   build:
+    name: Build Debug APK & Release AAB
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout source
+      - name: Checkout Code
         uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
-          cache: gradle
-      - name: Set up Gradle
+
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Build debug APK
-        run: gradle --no-daemon --stacktrace assembleDebug
-      - name: Build release APK and Play bundle
-        run: gradle --no-daemon --stacktrace assembleRelease bundleRelease
-      - name: Upload build artifacts
+
+      - name: Build Debug APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Build Unsigned Release APK & AAB
+        run: gradle --no-daemon assembleRelease bundleRelease
+
+      - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vplayer-android-builds
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/bundle/release/*.aab
+          name: VPlayer-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Release AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VPlayer-release-aab
+          path: app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: warn
           retention-days: 14

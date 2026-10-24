@@ -4,9 +4,8 @@
         <item name="colorPrimaryVariant">#D9360B</item>
         <item name="colorSecondary">#FF4B1B</item>
         <item name="android:fontFamily">sans</item>
-        <item name="android:statusBarColor">#F0F1F4</item>
-        <item name="android:navigationBarColor">#FAFAFA</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:statusBarColor">#0F111A</item>
+        <item name="android:navigationBarColor">#0F111A</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

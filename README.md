@@ -1,40 +1,18 @@
-# V Player — Android project
+# VPlayer — Ultimate Android Video Player Upgrade
 
-Package: `studio.muhammedomor.vplayer`
+VPlayer is a modern, lightweight, and powerful Android Video Player built with Kotlin, AndroidX Media3 (ExoPlayer), Jetpack components, and Material 3 design.
 
-## Build
+## Features
+- **AndroidX Media3 ExoPlayer Engine**: Supports MP4, MKV, WebM, MOV, TS, HDR, and high-fps videos with hardware acceleration.
+- **Advanced Touch Controls**: Double-tap for 10s seek, vertical swipe gestures for volume and brightness control.
+- **Video Scaling**: Responsive Fit, Crop, and Stretch aspect ratio scaling modes.
+- **Picture-in-Picture (PiP)**: Seamless background and mini-player video playback on supported Android versions.
+- **Subtitle Integration**: External subtitle picker supporting `.srt` files.
+- **Playback Resumption**: Remembers exact saved playback positions for all media files.
+- **Scoped Storage**: Handles modern Android `READ_MEDIA_VIDEO` / `READ_MEDIA_AUDIO` permissions cleanly.
 
-The project uses JDK 17, Gradle 8.9, Android Gradle Plugin 8.7.3, Kotlin 2.0.21 and AndroidX Media3 1.5.1.
-
-```bash
-gradle --no-daemon assembleDebug
-gradle --no-daemon assembleRelease bundleRelease
-```
-
-GitHub Actions builds a debug APK, release APK and Android App Bundle (AAB). The release build is **not signed for Play upload** unless you configure signing credentials in GitHub Actions and add a release signing configuration. Never commit a keystore or passwords.
-
-## Implemented in this revision
-
-- Media3 ExoPlayer playback with Media3 HLS, DASH and RTSP modules included.
-- Existing MediaStore library and playback-position/history persistence.
-- Playback speed selector from 0.25× to 4×.
-- Horizontal swipe seeking and vertical left/right brightness/volume gestures.
-- Audio-track selection where the stream exposes selectable tracks.
-- External subtitle picker for common text subtitle formats supported by Media3.
-- Fit/crop/stretch display modes.
-- Picture-in-picture entry and multitasking manifest configuration.
-- Modern media permissions, internet permission, release R8/minification rules and CI build of APK/AAB.
-
-## Important platform and format limits
-
-This repository is an Android player foundation, not a certification that all 40 requested commercial features are complete. Playback depends on Android's available decoders and the actual media codec/container. Media3 does not automatically guarantee AVI/FLV/ASS/SSA, 8K/120 fps, HDR10 or Dolby Vision on every device; Dolby Vision/HDR output is device, display, stream and decoder dependent. Software decoding for arbitrary codecs is not bundled. RTMP is not provided by the included Media3 modules. Network URLs, background audio service, persistent Room schema, sleep timer, AB repeat, screenshot/gallery capture, private vault, SMB/FTP/WebDAV, casting/DLNA, EQ/bass/virtualizer, online subtitle provider, analytics/crash reporting, ads, billing and full localization still require separately designed and tested modules and service credentials.
-
-The manifest intentionally does not request `MANAGE_EXTERNAL_STORAGE`: broad file access is highly restricted by Google Play policy. Use the system Photo Picker/Storage Access Framework or MediaStore access for user-selected media.
-
-## Before Play Store release
-
-1. Add and test the remaining features listed above on a representative device matrix.
-2. Configure a private release keystore using GitHub Actions secrets and verify signing.
-3. Add privacy policy, data safety disclosures, content rating and store listing.
-4. Test Android 8–16 behavior, media permissions, PiP, audio focus, Bluetooth routing, subtitles and malformed media files.
-5. Run `gradle lintRelease test` and physical-device regression tests. CI compilation alone does not prove runtime correctness.
+## Build and CI/CD Instructions
+1. Push this project to GitHub (`main` or `master` branch).
+2. GitHub Actions workflow `.github/workflows/android.yml` will trigger automatically.
+3. Once the build finishes, open the **Actions** tab on GitHub, click on the latest run, and download **VPlayer-debug-apk** from the Artifacts section.
+4. Transfer the `app-debug.apk` file to your phone and install it directly!

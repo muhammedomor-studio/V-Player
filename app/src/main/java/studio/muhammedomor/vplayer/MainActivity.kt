@@ -53,13 +53,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var empty: TextView
 
     private fun buildUi() {
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(18), dp(10), dp(18), dp(8)); setBackgroundColor(0xFFF0F1F4.toInt()) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(18), dp(10), dp(18), dp(8)); setBackgroundColor(0xFFF6F7FB.toInt()) }
         val header = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL; orientation = LinearLayout.HORIZONTAL }
-        header.addView(TextView(this).apply { text = "V PLAYER"; textSize = 30f; setTextColor(0xFF080808.toInt()); typeface = android.graphics.Typeface.DEFAULT_BOLD }, LinearLayout.LayoutParams(0, dp(72), 1f))
+        header.addView(TextView(this).apply { text = "V PLAYER"; textSize = 30f; setTextColor(0xFF171923.toInt()); typeface = android.graphics.Typeface.create("sans-serif-black", android.graphics.Typeface.BOLD) }, LinearLayout.LayoutParams(0, dp(72), 1f))
         header.addView(button("◷") { showHistory() })
         header.addView(button("⌕") { search.requestFocus() })
         root.addView(header)
-        search = EditText(this).apply { hint = "Search videos and music"; setSingleLine(true); textSize = 15f; setPadding(dp(12), 0, dp(12), 0) }
+        search = EditText(this).apply { hint = "Search videos and music"; setSingleLine(true); textSize = 15f; setPadding(dp(14), 0, dp(14), 0); backgroundTintList = android.content.res.ColorStateList.valueOf(0xFFFF4B1B.toInt()); setTextColor(0xFF202124.toInt()) }
         root.addView(search, LinearLayout.LayoutParams(-1, dp(48)))
         val tabs = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER; setPadding(0, dp(10), 0, dp(12)) }
         listOf("All", "Playlists", "Folders", "Shorts").forEach { label -> tabs.addView(button(label) { mode = label; title.text = if(label == "All") "Videos" else label; render() }, LinearLayout.LayoutParams(0, dp(44), 1f).apply { setMargins(dp(3),0,dp(3),0) }) }
@@ -115,11 +115,13 @@ class MainActivity : AppCompatActivity() {
     private fun refreshLibrary() { allMedia = MediaRepository.scan(this); render() }
     private fun render() {
         if (!::adapter.isInitialized) return
-        var shown = allMedia
-        if(mode == "Music") shown = shown.filter { it.isAudio }
-        if(mode == "Shorts") shown = shown.filter { !it.isAudio && it.durationMs in 1..90_000 }
-        if(mode == "Folders") shown = shown.groupBy { it.folder }.values.mapNotNull { it.firstOrNull() }
-        if(mode == "Playlists") shown = shown.filter { prefs.getStringSet("favorites", emptySet())!!.contains(it.uri.toString()) }
+        var shown = when(mode) {
+            "Music" -> allMedia.filter { it.isAudio }
+            "Shorts" -> allMedia.filter { !it.isAudio && it.durationMs in 1..90_000 }
+            "Folders" -> allMedia.filter { !it.isAudio }.groupBy { it.folder }.values.mapNotNull { it.firstOrNull() }
+            "Playlists" -> allMedia.filter { prefs.getStringSet("favorites", emptySet()).orEmpty().contains(it.uri.toString()) }
+            else -> allMedia.filter { !it.isAudio }
+        }
         shown = shown.filter { it.name.lowercase(Locale.getDefault()).contains(query.lowercase(Locale.getDefault())) }
         adapter.submit(shown)
         count.text = "${shown.size} ${if(shown.size == 1) "item" else "items"}"
@@ -135,16 +137,28 @@ class MainActivity : AppCompatActivity() {
     }
     private fun showDownloads() { AlertDialog.Builder(this).setTitle("Downloads").setMessage("V Player plays local files. Downloading online videos is not included.").setPositiveButton("OK",null).show() }
     private fun showMore() {
-        val opts = arrayOf("Favorites", "Choose folder", "Settings", "About V Player")
-        AlertDialog.Builder(this).setTitle("More").setItems(opts) { _, which -> when(which) {
+        val opts = arrayOf("Favorites", "Choose folder", "Settings", "Developer profile", "GitHub repository", "About V Player")
+        AlertDialog.Builder(this).setTitle("V Player • More").setItems(opts) { _, which -> when(which) {
             0 -> { mode = "Playlists"; title.text = "Favorites"; render() }
             1 -> folderPicker.launch(null)
-            2 -> AlertDialog.Builder(this).setTitle("Settings").setItems(arrayOf("Clear playback history","About permissions")) { _, item -> if(item==0) { prefs.edit().remove("history").apply(); Toast.makeText(this,"History cleared",Toast.LENGTH_SHORT).show() } else showPermissionsInfo() }.show()
-            3 -> showAbout()
+            2 -> AlertDialog.Builder(this).setTitle("Settings").setItems(arrayOf("Clear playback history","Storage permissions","App information")) { _, item ->
+                when(item) {
+                    0 -> { prefs.edit().remove("history").apply(); Toast.makeText(this,"History cleared",Toast.LENGTH_SHORT).show() }
+                    1 -> showPermissionsInfo()
+                    2 -> showAbout()
+                }
+            }.show()
+            3 -> openExternal("https://hikmah.net/@muhammedomor_official")
+            4 -> openExternal("https://github.com/muhammedomor-studio/V-Player")
+            5 -> showAbout()
         } }.show()
+    }
+    private fun openExternal(url: String) {
+        try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+        catch (_: Exception) { Toast.makeText(this, "Could not open link", Toast.LENGTH_SHORT).show() }
     }
     private fun showPermissionsInfo() { AlertDialog.Builder(this).setTitle("Storage access").setMessage("Android may restrict broad file access. V Player requests media permissions and offers the system All files access setting. Grant only permissions you are comfortable with.").setPositiveButton("OK",null).show() }
     private fun showAbout() { AlertDialog.Builder(this).setTitle("About V Player").setMessage("V Player\\nVersion 1.0.0\\nDeveloper: Muhammed Omor\\n\\nHikmah profile:\\nhttps://hikmah.net/@muhammedomor_official\\n\\nGitHub:\\nhttps://github.com/muhammedomor-studio/V-Player").setPositiveButton("OK",null).show() }
-    private fun button(label: String, action: () -> Unit): Button = Button(this).apply { text = label; textSize = 12f; isAllCaps = false; setTextColor(0xFF303136.toInt()); setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFE0E1E5.toInt())); setOnClickListener { action() } }
+    private fun button(label: String, action: () -> Unit): Button = Button(this).apply { text = label; textSize = 12f; isAllCaps = false; setTextColor(0xFF303136.toInt()); setBackgroundTintList(android.content.res.ColorStateList.valueOf(if(label in listOf("All","Videos")) 0xFFFF4B1B.toInt() else 0xFFE9EBF2.toInt())); minHeight = dp(42); setPadding(dp(5),0,dp(5),0); setOnClickListener { action() } }
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
 }

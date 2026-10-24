@@ -23,5 +23,11 @@ Requires JDK 17 and Gradle 8.9. Run `gradle assembleDebug`.
 ## Permissions and Android policy
 The app requests media permissions and offers the system's special All files access setting on Android 11+. That special permission is sensitive and Google Play restricts its use; request it only if the app's core functionality genuinely needs broad file management. Android can still restrict what a given API/permission exposes. The system document picker is offered for selecting a folder, but this starter does not yet recursively enumerate every document-tree provider.
 
+## UI improvements in this revision
+- App launcher icon uses the supplied V Player play-logo image; a scalable Android vector logo is also included
+- More menu now includes direct Developer profile and GitHub repository links
+- Video list separates audio from video, and Android 10+ video thumbnails are loaded asynchronously where available
+- Updated premium neutral palette with orange accent and improved playback control contrast
+
 ## Important status
 This is a substantial starter implementation, not yet verified by a real Android build or device test in this environment. Please run the GitHub Actions workflow and inspect build logs before treating it as release-ready. More advanced features such as background playback/media notification, subtitle file picker, gesture brightness/volume, audio track selection UI, thumbnails, persistent Room database, casting, and MP3 transcoding are not included yet.

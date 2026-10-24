@@ -27,19 +27,19 @@ class PlayerActivity : AppCompatActivity() {
         if(items.isEmpty()) { finish(); return }
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(0xFF050505.toInt()) }
-        val header = LinearLayout(this).apply { gravity = android.view.Gravity.CENTER_VERTICAL; setPadding(10,0,10,0) }
-        val title = TextView(this).apply { setTextColor(0xFFFFFFFF.toInt()); textSize = 15f; maxLines = 1 }
+        val header = LinearLayout(this).apply { gravity = android.view.Gravity.CENTER_VERTICAL; setPadding(12,0,12,0); setBackgroundColor(0xFF11131A.toInt()) }
+        val title = TextView(this).apply { setTextColor(0xFFFFFFFF.toInt()); textSize = 15f; maxLines = 1; typeface = android.graphics.Typeface.DEFAULT_BOLD }
         header.addView(title, LinearLayout.LayoutParams(0, 48, 1f))
-        header.addView(Button(this).apply { text = "↻"; setOnClickListener { requestedOrientation = if(resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) ActivityInfo.SCREEN_ORIENTATION_PORTRAIT else ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE } })
-        header.addView(Button(this).apply { text = "×"; setOnClickListener { finish() } })
+        header.addView(Button(this).apply { text = "Rotate"; setTextColor(0xFFFFFFFF.toInt()); backgroundTintList = android.content.res.ColorStateList.valueOf(0xFFFF4B1B.toInt()); setOnClickListener { requestedOrientation = if(resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) ActivityInfo.SCREEN_ORIENTATION_PORTRAIT else ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE } })
+        header.addView(Button(this).apply { text = "Close"; setTextColor(0xFFFFFFFF.toInt()); backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF303442.toInt()); setOnClickListener { finish() } })
         root.addView(header)
         val view = PlayerView(this).apply { useController = true; setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING); controllerAutoShow = true; setBackgroundColor(0xFF000000.toInt()) }
         root.addView(view, LinearLayout.LayoutParams(-1,0,1f))
         val controls = LinearLayout(this).apply { gravity = android.view.Gravity.CENTER }
-        controls.addView(Button(this).apply { text = "−10s"; setOnClickListener { player?.let { it.seekTo((it.currentPosition-10_000).coerceAtLeast(0)) } } })
-        controls.addView(Button(this).apply { text = "+10s"; setOnClickListener { player?.let { it.seekTo((it.currentPosition+10_000).coerceAtMost(it.duration.coerceAtLeast(0))) } } })
-        controls.addView(Button(this).apply { text = "Speed"; setOnClickListener { chooseSpeed() } })
-        controls.addView(Button(this).apply { text = "Next"; setOnClickListener { playAt((currentIndex+1)%items.size, view, title) } })
+        controls.addView(Button(this).apply { text = "−10s"; backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF252A36.toInt()); setTextColor(0xFFFFFFFF.toInt()); setOnClickListener { player?.let { it.seekTo((it.currentPosition-10_000).coerceAtLeast(0)) } } })
+        controls.addView(Button(this).apply { text = "+10s"; backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF252A36.toInt()); setTextColor(0xFFFFFFFF.toInt()); setOnClickListener { player?.let { it.seekTo((it.currentPosition+10_000).coerceAtMost(it.duration.coerceAtLeast(0))) } } })
+        controls.addView(Button(this).apply { text = "Speed"; backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF252A36.toInt()); setTextColor(0xFFFFFFFF.toInt()); setOnClickListener { chooseSpeed() } })
+        controls.addView(Button(this).apply { text = "Next"; backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF252A36.toInt()); setTextColor(0xFFFFFFFF.toInt()); setOnClickListener { playAt((currentIndex+1)%items.size, view, title) } })
         root.addView(controls)
         setContentView(root)
         playAt(currentIndex, view, title)
